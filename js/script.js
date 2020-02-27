@@ -18,7 +18,7 @@
     var shoots = 0
     var hits = 0
     var accuracy = 0
-    var scoreToWin = 70
+    var scoreToWin = 5
 
     // sprites
 
@@ -38,6 +38,11 @@
     var pausedMessage = new ObjectMessage(cnv.height/2, "PAUSED", "#f00")
     pausedMessage.visible = false
     messages.push(pausedMessage)
+
+    // mensagem de game over
+    var gameOverMessage = new ObjectMessage(cnv.height/2, "", "#f00")
+    gameOverMessage.visible = false
+    messages.push(gameOverMessage)
 
     // placar
     var scoreMessage = new ObjectMessage(10, "", "#0f0")
@@ -95,14 +100,16 @@
                 mvRight = false
                 break
             case ENTER : 
-                if(gameState !== PLAYING) {
-                    gameState = PLAYING
-                    startMessage.visible = false
-                    pausedMessage.visible = false
-                } else {
-                    gameState = PAUSED
-                    pausedMessage.visible = true
-                }
+                if(gameState !== OVER) {
+                    if(gameState !== PLAYING) {
+                        gameState = PLAYING
+                        startMessage.visible = false
+                        pausedMessage.visible = false
+                    } else {
+                        gameState = PAUSED
+                        pausedMessage.visible = true
+                    }
+                }                
                 break
                 case SPACE :
                     if(spaceIsDown) {
@@ -166,9 +173,22 @@
         if(hits.length < 2) {
             hits = "0" + hits
         }
-        
-        scoreMessage.text = "HITS: " + hits + " - ACCURACY: " + accuracy + "%"
 
+        scoreMessage.text = "HITS: " + hits + " - ACCURACY: " + accuracy + "%"
+    }
+
+    function endGame() {
+        if(hits < scoreToWin) {
+            gameOverMessage.text = "EARTH DESTROYED!"
+        } else {
+            gameOverMessage.text = "EARTH SAVED!"
+            gameOverMessage.color = "#00f"
+        }
+        gameOverMessage.visible = true
+
+        setTimeout(() => {
+            location.reload()
+        }, 3000);
     }
 
     function makeAlien() {
@@ -211,6 +231,9 @@
                 break
             case PLAYING :
                 update()
+                break
+            case OVER :
+                endGame()
                 break
         }
 
@@ -285,6 +308,13 @@
                 gameState = OVER
             }
 
+            // confere se algum alien colidiu com a nave
+            if(collide(alien, defender)) {
+                destroyAlien(alien)
+                removeObjects(defender, sprites)
+                gameState = OVER
+            }
+
             // Confere se algum alien foi destruido
             for(var j in missiles) {
                 var missile = missiles[j]
@@ -292,6 +322,14 @@
                     destroyAlien(alien)
                     hits++
                     updateScore()
+                    if(parseInt(hits) === scoreToWin) {
+                        gameState = OVER
+                        // destroi todos os aliens
+                        for(var k in aliens) {
+                            var alienk = aliens[k]
+                            destroyAlien(alienk)
+                        }
+                    }
                     removeObjects(missile, missiles)
                     removeObjects(missile, sprites)
                     j--
