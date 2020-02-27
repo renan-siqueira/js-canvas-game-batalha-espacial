@@ -8,6 +8,11 @@
     var sprites = []
     var assetsToLoad = []
     var missiles = []
+    var aliens = []
+
+    // variaveis uteis
+    var alienFrequency = 100
+    var alienTimer = 0
 
     // sprites
 
@@ -113,6 +118,28 @@
         }
     }
 
+    function makeAlien() {
+
+        // cria um valor aleatorio entre 0 e 7 => largura do canvas / largura do alien
+        // divide o canvas em 8 colunas para o posicionamento aleatório do alien
+        var alienPosition = (Math.floor(Math.random() * 8)) * 50
+        var alien = new Alien(30,0,50,50, alienPosition, -50)
+        alien.vy = 1
+
+        // otimização do alien
+        if(Math.floor(Math.random() * 11) > 7) {
+            alien.state = alien.CRAZY
+            alien.vx = 2
+        }
+
+        if(Math.floor(Math.random() * 11) > 5) {
+            alien.vy = 2
+        }
+
+        sprites.push(alien)
+        aliens.push(alien)
+    }
+
     function loop() {
         requestAnimationFrame(loop, cnv)
 
@@ -161,6 +188,38 @@
                 removeObjects(missile, missiles)
                 removeObjects(missile, sprites)
                 i--
+            }
+        }
+
+        // incremento do alienTimer
+        alienTimer++
+
+        // criação do alien caso o timer se iguale a frequencia
+        if(alienTimer === alienFrequency) {
+            makeAlien()
+            alienTimer = 0
+
+            // ajuste na frequencia de criação de aliens
+            if(alienFrequency > 2) {
+                alienFrequency--
+            }
+        }
+
+        // move os aliens
+        for(var i in aliens) {
+            var alien = aliens[i]
+            if(alien.state !== alien.EXPLODED) {
+                alien.y += alien.vy
+                if(alien.state === alien.CRAZY) {
+                    if(alien.x > cnv.width - alien.width || alien.x < 0) {
+                        alien.vx *= -1
+                    }
+                    alien.x += alien.vx
+                }
+            }
+            // Confere se algum alien chegou a Terra
+            if(alien.y > cnv.height + alien.height) {
+                gameState = OVER
             }
         }
     }
