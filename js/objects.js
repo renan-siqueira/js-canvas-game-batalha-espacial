@@ -41,3 +41,14 @@ Alien.prototype.explode = function() {
     this.width = this.height = 56
     
 }
+
+
+var ObjectMessage = function(y, text, color) {
+    this.x = 0
+    this.y = y
+    this.text = text
+    this.visible = true
+    this.font = "normal bold 20px emulogic"
+    this.color = color
+    this.baseline = "top"
+}

@@ -9,10 +9,16 @@
     var assetsToLoad = []
     var missiles = []
     var aliens = []
+    var messages = []
+
 
     // variaveis uteis
     var alienFrequency = 100
     var alienTimer = 0
+    var shoots = 0
+    var hits = 0
+    var accuracy = 0
+    var scoreToWin = 70
 
     // sprites
 
@@ -23,6 +29,21 @@
     // nave
     var defender = new Sprite(0,0,30,50,185,450)
     sprites.push(defender)
+
+    // mensagem da tela inicial
+    var startMessage = new ObjectMessage(cnv.height/2, "PRESS ENTER", "#f00")
+    messages.push(startMessage)
+
+    // mensagem de pausa
+    var pausedMessage = new ObjectMessage(cnv.height/2, "PAUSED", "#f00")
+    pausedMessage.visible = false
+    messages.push(pausedMessage)
+
+    // placar
+    var scoreMessage = new ObjectMessage(10, "", "#0f0")
+    scoreMessage.font = "normal bold 15px emulogic"
+    updateScore()
+    messages.push(scoreMessage)
 
     // imagem
     var img = new Image()
@@ -76,8 +97,11 @@
             case ENTER : 
                 if(gameState !== PLAYING) {
                     gameState = PLAYING
+                    startMessage.visible = false
+                    pausedMessage.visible = false
                 } else {
                     gameState = PAUSED
+                    pausedMessage.visible = true
                 }
                 break
                 case SPACE :
@@ -108,6 +132,7 @@
         missile.vy = -8
         sprites.push(missile)
         missiles.push(missile)
+        shoots++
     }
 
     // remove os objetos do jogo
@@ -116,6 +141,34 @@
         if(i !== -1) {
             array.splice(i, 1)
         }
+    }
+
+    function updateScore() {
+        
+        // calculo do aproveitamento
+        if(shoots == 0) {
+            accuracy = 100
+        } else {
+            accuracy = Math.floor((hits/shoots) * 100)
+        }
+        // ajuste no texto de aproveitamento
+        if(accuracy < 100) {
+            accuracy = accuracy.toString()
+            if(accuracy.length < 2) {
+                accuracy = "  " + accuracy
+            } else {
+                accuracy = " " + accuracy
+            }
+        }
+
+        // ajuste no texto do hits
+        hits = hits.toString()
+        if(hits.length < 2) {
+            hits = "0" + hits
+        }
+        
+        scoreMessage.text = "HITS: " + hits + " - ACCURACY: " + accuracy + "%"
+
     }
 
     function makeAlien() {
@@ -196,6 +249,7 @@
             if(missile.y < -missile.height) {
                 removeObjects(missile, missiles)
                 removeObjects(missile, sprites)
+                updateScore()
                 i--
             }
         }
@@ -236,7 +290,8 @@
                 var missile = missiles[j]
                 if(collide(missile, alien) && alien.state !== alien.EXPLODED) {
                     destroyAlien(alien)
-
+                    hits++
+                    updateScore()
                     removeObjects(missile, missiles)
                     removeObjects(missile, sprites)
                     j--
@@ -248,10 +303,24 @@
 
     function render() {
         ctx.clearRect(0,0,cnv.width,cnv.height)
+        // exibe os sprites
         if(sprites.length !== 0) {
             for(var i in sprites) {
                 var spr = sprites[i]
                 ctx.drawImage(img, spr.sourceX, spr.sourceY, spr.width, spr.height, Math.floor(spr.x), Math.floor(spr.y), spr.width, spr.height)
+            }
+        }
+        // exibe os textos
+        if(messages.length !== 0) {
+            for(var i in messages) {
+                var message = messages[i]
+                if(message.visible) {
+                    ctx.font = message.font
+                    ctx.fillStyle = message.color
+                    ctx.textBaseline = message.baseline
+                    message.x = (cnv.width - ctx.measureText(message.text).width) / 2
+                    ctx.fillText(message.text, message.x, message.y)
+                }
             }
         }
     }
