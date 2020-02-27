@@ -7,6 +7,7 @@
     // arrays
     var sprites = []
     var assetsToLoad = []
+    var missiles = []
 
     // sprites
 
@@ -31,8 +32,8 @@
     // entradas
     var LEFT = 37, RIGHT = 39, ENTER = 13, SPACE = 32
 
-    // direções
-    var mvLeft = mvRight = false
+    // ações
+    var mvLeft = mvRight = shoot = spaceIsDown = false
 
     // Estados do jogo
     var LOADING = 0, PLAYING = 1, PAUSED = 2, OVER = 3
@@ -48,6 +49,12 @@
                 break
             case RIGHT :
                 mvRight = true
+                break
+            case SPACE :
+                if(!spaceIsDown) {
+                    shoot = true
+                    spaceIsDown = true
+                }
                 break
         }
     },false)
@@ -67,6 +74,12 @@
                 } else {
                     gameState = PAUSED
                 }
+                break
+                case SPACE :
+                    if(spaceIsDown) {
+                        spaceIsDown = false
+                    }
+                    break
         }
     },false)
 
@@ -82,6 +95,21 @@
 
             // inicia o jogo
             gameState = PAUSED
+        }
+    }
+
+    function fireMissile() {
+        var missile = new Sprite(136, 12, 8, 13, defender.centerX() - 4, defender.y - 13)
+        missile.vy = -8
+        sprites.push(missile)
+        missiles.push(missile)
+    }
+
+    // remove os objetos do jogo
+    function removeObjects(objectToRemove, array) {
+        var i = array.indexOf(objectToRemove)
+        if(i !== -1) {
+            array.splice(i, 1)
         }
     }
 
@@ -115,8 +143,26 @@
             defender.vx = 0
         }
 
+        // dispara o canhão
+        if(shoot) {
+            fireMissile()
+            shoot = false
+        }
+
         // atualiza a posição
         defender.x = Math.max(0, Math.min(cnv.width-defender.width, defender.x + defender.vx))
+
+        // atualiza a posição dos misseis
+        for(var i in missiles) {
+            var missile = missiles[i]
+            missile.y += missile.vy
+
+            if(missile.y < -missile.height) {
+                removeObjects(missile, missiles)
+                removeObjects(missile, sprites)
+                i--
+            }
+        }
     }
 
     function render() {
