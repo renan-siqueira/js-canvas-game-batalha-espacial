@@ -1,4 +1,4 @@
-var Sprite = function(sourceX,sourceY,width,height,x,y ) {
+var Sprite = function(sourceX,sourceY,width,height,x,y) {
     this.sourceX = sourceX
     this.sourceY = sourceY
     this.width = width
@@ -23,4 +23,21 @@ Sprite.prototype.halfWidth = function() {
 
 Sprite.prototype.halfHeight = function() {
     return this.height/2
+}
+
+var Alien = function(sourceX,sourceY,width,height,x,y) {
+    Sprite.call(this,sourceX,sourceY,width,height,x,y)
+    this.NORMAL = 1
+    this.EXPLODED = 2
+    this.CRAZY = 3
+    this.state = this.NORMAL
+    this.myStyle = this.NORMAL
+}
+
+Alien.prototype = Object.create(Sprite.prototype)
+
+Alien.prototype.explode = function() {
+    this.sourceX = 80
+    this.width = this.height = 56
+    
 }
