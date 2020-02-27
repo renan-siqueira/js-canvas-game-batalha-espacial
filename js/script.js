@@ -140,6 +140,15 @@
         aliens.push(alien)
     }
 
+    function destroyAlien(alien) {
+        alien.state = alien.EXPLODED
+        alien.explode()
+        setTimeout(function(){
+            removeObjects(alien, aliens)
+            removeObjects(alien, sprites)
+        }, 1000)
+    }
+
     function loop() {
         requestAnimationFrame(loop, cnv)
 
@@ -220,6 +229,19 @@
             // Confere se algum alien chegou a Terra
             if(alien.y > cnv.height + alien.height) {
                 gameState = OVER
+            }
+
+            // Confere se algum alien foi destruido
+            for(var j in missiles) {
+                var missile = missiles[j]
+                if(collide(missile, alien) && alien.state !== alien.EXPLODED) {
+                    destroyAlien(alien)
+
+                    removeObjects(missile, missiles)
+                    removeObjects(missile, sprites)
+                    j--
+                    i--
+                }
             }
         }
     }
