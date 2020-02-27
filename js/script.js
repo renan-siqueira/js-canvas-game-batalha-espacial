@@ -18,7 +18,9 @@
     var shoots = 0
     var hits = 0
     var accuracy = 0
-    var scoreToWin = 5
+    var scoreToWin = 70
+    var FIRE = 0
+    var EXPLOSION = 1
 
     // sprites
 
@@ -135,6 +137,7 @@
     }
 
     function fireMissile() {
+        playSound(FIRE)
         var missile = new Sprite(136, 12, 8, 13, defender.centerX() - 4, defender.y - 13)
         missile.vy = -8
         sprites.push(missile)
@@ -191,6 +194,18 @@
         }, 3000);
     }
 
+    function playSound(soundType) {
+        var sound = document.createElement("audio")
+        if(soundType === EXPLOSION) {
+            sound.src = "./sound/explosion.ogg"
+        } else {
+            sound.src = "./sound/fire.ogg"
+        }
+        sound.addEventListener("canplaythrough", function(){
+            sound.play()
+        }, false)
+    }
+
     function makeAlien() {
 
         // cria um valor aleatorio entre 0 e 7 => largura do canvas / largura do alien
@@ -214,6 +229,7 @@
     }
 
     function destroyAlien(alien) {
+        playSound(EXPLOSION)
         alien.state = alien.EXPLODED
         alien.explode()
         setTimeout(function(){
